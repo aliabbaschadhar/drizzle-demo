@@ -1,4 +1,13 @@
-import { integer, pgEnum, pgTable, uniqueIndex, uuid, varchar, unique } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgEnum,
+  pgTable,
+  uniqueIndex,
+  uuid,
+  varchar,
+  unique,
+  boolean
+} from "drizzle-orm/pg-core";
 
 
 export const UserRole = pgEnum("userRole", ["ADMIN", "BASIC"]);
@@ -33,4 +42,11 @@ export const UserTable = pgTable("users", {
     // What if i want the user to have unique name and age combination
     uniqueNameAndAge: unique("uniqueNameAndAge").on(table.name, table.age)
   }
+})
+
+export const userPreferences = pgTable("userPreferences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  emailUpdates: boolean("emailUpdates").notNull().default(false),
+  //Foreign key
+  userId: uuid("userId").references(() => UserTable.id).notNull(),
 })
