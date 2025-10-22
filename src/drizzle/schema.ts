@@ -1,4 +1,4 @@
-import { integer, pgEnum, pgTable, uniqueIndex, uuid, varchar, } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, uniqueIndex, uuid, varchar, unique } from "drizzle-orm/pg-core";
 
 
 export const UserRole = pgEnum("userRole", ["ADMIN", "BASIC"]);
@@ -29,6 +29,8 @@ export const UserTable = pgTable("users", {
   return {
     // This explicitly creates a unique index on email.
     // NOTE: it's redundant because of the `.unique()` above — choose one approach.
-    emailIndex: uniqueIndex("emailIndex").on(table.email)
+    emailIndex: uniqueIndex("emailIndex").on(table.email),
+    // What if i want the user to have unique name and age combination
+    uniqueNameAndAge: unique("uniqueNameAndAge").on(table.name, table.age)
   }
 })
