@@ -6,7 +6,10 @@ import {
   uuid,
   varchar,
   unique,
-  boolean
+  boolean,
+  real,
+  timestamp,
+  primaryKey
 } from "drizzle-orm/pg-core";
 
 
@@ -44,9 +47,49 @@ export const UserTable = pgTable("users", {
   }
 })
 
-export const userPreferences = pgTable("userPreferences", {
+// one to one relation
+export const UserPreferences = pgTable("userPreferences", {
   id: uuid("id").primaryKey().defaultRandom(),
   emailUpdates: boolean("emailUpdates").notNull().default(false),
   //Foreign key
   userId: uuid("userId").references(() => UserTable.id).notNull(),
+})
+
+// One to many relation
+export const PostTable = pgTable("postTable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: varchar("title", { length: 255 }).notNull(),
+  averageRating: real("averageRating").notNull().default(0), // As we know float is not available in postgres so we will use
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt").notNull().defaultNow(),
+  authorId: uuid("authorId").references(() => UserTable.id).notNull()
+})
+
+// Many to many relation
+// Why this structure?
+// - A many-to-many relationship cannot be represented by a single foreign key on one table.
+// - We use a dedicated join table (postCategoryTable) that stores pairs (postId, categoryId).
+//   Each row means "this post is in this category".
+// - Referential integrity: each column references its parent table so the DB prevents invalid pairs.
+// - Composite primary key (postId, categoryId):
+//     * Ensures uniqueness of each post-category pair (no duplicate associations).
+//     * Serves as an index for fast lookup when querying categories for a post or posts for a category.
+//     * Avoids an unnecessary surrogate id when the pair itself is the natural unique identifier.
+// - Alternatives: if you need metadata on the association (e.g., addedAt), keep this table and add columns.
+// - Performance: depending on query patterns, you may add additional indexes; composite PK already helps common lookups.
+
+export const CategoryTable = pgTable("categoryTable", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+})
+
+export const PostCategoryTable = pgTable("postCategoryTable", {
+  postId: uuid("postId").references(() => PostTable.id).notNull(),
+  categoryId: uuid("categoryId").references(() => CategoryTable.id).notNull(),
+
+}, table => {
+  return {
+    // Composite primary key ensures that each post-category pair is unique
+    pk: primaryKey({ columns: [table.postId, table.categoryId] })
+  }
 })
