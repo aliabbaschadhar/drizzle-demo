@@ -15,6 +15,20 @@
       "when": 1761152730015,
       "tag": "0001_tan_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761153415338,
+      "tag": "0002_low_silverclaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1761153703450,
+      "tag": "0003_bored_toad",
+      "breakpoints": true
     }
   ]
 }
